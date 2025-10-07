@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: laravel_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+      - RABBITMQ_QUEUE=fila_teste
+    command: >
+      bash -c "composer install &&
+               php artisan key:generate &&
+               php artisan serve --host=0.0.0.0 --port=8000"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  composer:
+    image: composer:2
+    working_dir: /app
+    volumes:
+      - ./:/app
